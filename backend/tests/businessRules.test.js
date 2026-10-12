@@ -21,6 +21,7 @@ const dashboardController = require("../controllers/dashboardController");
 const reportController = require("../controllers/reportController");
 const { recordAuditLog } = require("../controllers/auditController");
 const authController = require("../controllers/authController");
+const userController = require("../controllers/userController");
 const notificationController = require("../controllers/notificationController");
 
 const restorers = [];
@@ -610,7 +611,7 @@ test("audit records redact credential-like metadata and include actor/entity", a
   assert.doesNotMatch(stored.details, /must-not-be-stored|secret/);
 });
 
-test("public registration ignores a client-supplied privileged role", async () => {
+test("public registration creates a hashed Driver account and ignores role overrides", async () => {
   let savedUser;
   stub(User, "findOne", async () => null);
   stub(User, "create", async (data) => {
@@ -631,7 +632,7 @@ test("public registration ignores a client-supplied privileged role", async () =
         body: {
           name: "Test User",
           email: "TEST@example.com",
-          password: "valid-password",
+          password: "Valid-password8",
           role: "Admin",
         },
       },
@@ -647,8 +648,86 @@ test("public registration ignores a client-supplied privileged role", async () =
   assert.equal(savedUser.role, undefined);
   assert.equal(res.body.user.role, "Driver");
   assert.equal(Object.hasOwn(res.body.user, "password"), false);
-  assert.equal(typeof res.body.token, "string");
-  assert.equal(savedUser.password === "valid-password", false);
+  assert.equal(res.body.token, undefined);
+  assert.equal(await require("bcryptjs").compare("Valid-password8", savedUser.password), true);
+});
+
+test("public registration rejects weak passwords and malformed emails", async () => {
+  const res = response();
+  await authController.registerUser(
+    {
+      body: {
+        name: "Test User",
+        email: "not-an-email",
+        password: "weak",
+      },
+    },
+    res
+  );
+
+  assert.equal(res.statusCode, 400);
+  assert.match(res.body.message, /valid email/i);
+});
+
+test("profile updates ignore role changes and persist only profile fields", async () => {
+  let update;
+  const savedUser = {
+    _id: "user-1",
+    name: "Updated Name",
+    email: "new@example.com",
+    phone: "555-0100",
+    role: "Driver",
+  };
+  stub(User, "findByIdAndUpdate", (_id, updateDoc) => {
+    update = updateDoc;
+    return { select: async () => savedUser };
+  });
+  const res = response();
+  await userController.updateProfile(
+    {
+      user: { _id: "user-1" },
+      body: {
+        name: "Updated Name",
+        email: "NEW@example.com",
+        phone: "555-0100",
+        role: "Admin",
+        isActive: true,
+      },
+    },
+    res
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(update.$set.email, "new@example.com");
+  assert.equal(update.$set.role, undefined);
+  assert.equal(update.$set.isActive, undefined);
+  assert.equal(res.body.user.role, "Driver");
+});
+
+test("password change verifies the current password and hashes the replacement", async () => {
+  const bcrypt = require("bcryptjs");
+  const originalHash = await bcrypt.hash("CurrentPass123", 4);
+  const account = {
+    _id: "user-1",
+    password: originalHash,
+    save: async () => {},
+  };
+  stub(User, "findById", async () => account);
+  const res = response();
+  await userController.changePassword(
+    {
+      user: { _id: "user-1" },
+      body: {
+        currentPassword: "CurrentPass123",
+        newPassword: "ReplacementPass456",
+      },
+    },
+    res
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(await bcrypt.compare("ReplacementPass456", account.password), true);
+  assert.notEqual(account.password, originalHash);
 });
 
 test("notifications are scoped to the authenticated role and user", async () => {

@@ -87,6 +87,27 @@ const updateUser = async (req, res) => {
       }
       updates.isActive = req.body.isActive;
     }
+    const targetUser = await User.findById(req.params.id).select("role isActive");
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    const willRemoveActiveAdmin =
+      targetUser.role === "Admin" &&
+      targetUser.isActive &&
+      (updates.role !== undefined && updates.role !== "Admin" ||
+        updates.isActive === false);
+    if (willRemoveActiveAdmin) {
+      const otherActiveAdmins = await User.countDocuments({
+        _id: { $ne: targetUser._id },
+        role: "Admin",
+        isActive: true,
+      });
+      if (otherActiveAdmins === 0) {
+        return res.status(409).json({
+          message: "The last active administrator cannot be demoted or deactivated.",
+        });
+      }
+    }
     if (req.body.password !== undefined && req.body.password !== "") {
       if (typeof req.body.password !== "string" || req.body.password.length < 6) {
         return res.status(400).json({ message: "Password must be at least 6 characters." });
@@ -133,6 +154,22 @@ const deleteUser = async (req, res) => {
   try {
     if (String(req.params.id) === String(req.user._id)) {
       return res.status(400).json({ message: "You cannot delete your own account." });
+    }
+    const existingUser = await User.findById(req.params.id).select("role isActive");
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (existingUser.role === "Admin" && existingUser.isActive) {
+      const otherActiveAdmins = await User.countDocuments({
+        _id: { $ne: existingUser._id },
+        role: "Admin",
+        isActive: true,
+      });
+      if (otherActiveAdmins === 0) {
+        return res.status(409).json({
+          message: "The last active administrator cannot be deleted.",
+        });
+      }
     }
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {

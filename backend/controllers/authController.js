@@ -3,32 +3,49 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const { recordAuditLog } = require("./auditController");
 
+const isValidEmail = (email) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const isStrongPassword = (password) =>
+  password.length >= 8 &&
+  /[a-z]/.test(password) &&
+  /[A-Z]/.test(password) &&
+  /\d/.test(password);
+
 // REGISTER
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body || {};
+    const normalizedName = String(name || "").trim();
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (!name || !normalizedEmail || !password) {
+    if (
+      normalizedName.length < 2 ||
+      normalizedName.length > 100 ||
+      !isValidEmail(normalizedEmail) ||
+      typeof password !== "string" ||
+      !isStrongPassword(password)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required.",
+        message:
+          "Enter a name, valid email, and password with at least 8 characters, one uppercase letter, one lowercase letter, and one number.",
       });
     }
 
     const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "User already exists",
+        message: "An account with this email already exists.",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      name: name.trim(),
+      name: normalizedName,
       email: normalizedEmail,
       password: hashedPassword,
     });
@@ -41,22 +58,28 @@ const registerUser = async (req, res) => {
       metadata: { role: user.role },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful. Sign in to continue.",
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
-      token: generateToken(user._id, user.role),
     });
   } catch (error) {
-    const isBadRequest =
-      error.code === 11000 || error.name === "ValidationError";
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists.",
+      });
+    }
+    const isBadRequest = error.name === "ValidationError";
     if (!isBadRequest) {
       console.error("User registration failed:", error.name || "Error");
     }
-    res.status(isBadRequest ? 400 : 500).json({
+    return res.status(isBadRequest ? 400 : 500).json({
       success: false,
       message: isBadRequest ? "Invalid registration details." : "Unable to register user.",
     });

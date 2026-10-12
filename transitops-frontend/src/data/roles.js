@@ -4,7 +4,7 @@ export const roles = [
     label: "Fleet Manager",
     ticket: "FM",
     summary: "Oversees fleet assets, maintenance, vehicle lifecycle and operational efficiency.",
-    landing: "/",
+    landing: "/dashboard",
     accent: "amber",
   },
   {
@@ -36,18 +36,18 @@ export const roles = [
     label: "Admin",
     ticket: "AD",
     summary: "Manages TransitOps user accounts and administrative access.",
-    landing: "/",
+    landing: "/dashboard",
     accent: "slate",
   },
 ];
 
 // Which sidebar sections each role is permitted to see (RBAC per spec 3.1).
 export const roleAccess = {
-  "Fleet Manager": ["dashboard", "vehicles", "drivers", "trips", "maintenance", "fuel", "reports", "notifications", "users", "audit"],
-  Driver: ["trips", "notifications"],
-  "Safety Officer": ["drivers", "notifications"],
-  "Financial Analyst": ["fuel", "reports", "notifications"],
-  Admin: ["dashboard", "notifications", "users", "audit"],
+  "Fleet Manager": ["dashboard", "vehicles", "drivers", "trips", "maintenance", "fuel", "reports", "notifications", "profile"],
+  Driver: ["trips", "notifications", "profile"],
+  "Safety Officer": ["drivers", "notifications", "profile"],
+  "Financial Analyst": ["trips", "fuel", "reports", "notifications", "profile"],
+  Admin: ["dashboard", "notifications", "users", "audit", "profile"],
 };
 
 const readStoredUser = () => {
@@ -64,7 +64,7 @@ export const hasRole = (...allowedRoles) =>
   allowedRoles.includes(getStoredRole());
 
 export const pageForMenu = {
-  dashboard: "/",
+  dashboard: "/dashboard",
   vehicles: "/vehicles",
   drivers: "/drivers",
   trips: "/trips",
@@ -74,6 +74,7 @@ export const pageForMenu = {
   notifications: "/notifications",
   users: "/users",
   audit: "/audit",
+  profile: "/profile",
 };
 
 export const firstAllowedPage = (role) =>

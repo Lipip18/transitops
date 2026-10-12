@@ -164,7 +164,7 @@ function Trips() {
             <th>Vehicle</th>
             <th>Driver</th>
             <th>Status</th>
-            <th width="280">Actions</th>
+            <th className="trip-actions-column">Actions</th>
           </tr>
         </thead>
 
@@ -189,51 +189,45 @@ function Trips() {
 
                 <td><span className={`pill pill-${trip.status.toLowerCase().replaceAll(" ", "")}`}>{trip.status}</span></td>
 
-                <td>
+                <td className="trip-actions-cell">
                   {canManageTrips && trip.status === "Draft" && (
-                    <>
-                    <button
-                      className="edit-btn"
-                      onClick={() => { setShowTripForm(false); setEditingTrip(trip); }}
-                      disabled={pendingTripId === trip._id}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => dispatchTrip(trip._id)}
-                      disabled={pendingTripId === trip._id}
-                      className="primary-btn"
-                    >
-                      Dispatch
-                    </button>
-                    <button
-                      className="ghost-btn"
-                      style={{ marginLeft: 10 }}
-                      onClick={() => cancelTrip(trip._id)}
-                      disabled={pendingTripId === trip._id}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="delete-btn"
-                      style={{ marginLeft: 10 }}
-                      onClick={() => deleteDraftTrip(trip)}
-                      disabled={pendingTripId === trip._id}
-                    >
-                      Delete
-                    </button>
-                    </>
+                    <div className="trip-actions">
+                      <button
+                        className="edit-btn"
+                        onClick={() => { setShowTripForm(false); setEditingTrip(trip); }}
+                        disabled={pendingTripId === trip._id}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => dispatchTrip(trip._id)}
+                        disabled={pendingTripId === trip._id}
+                        className="primary-btn"
+                      >
+                        Dispatch
+                      </button>
+                      <button
+                        className="ghost-btn"
+                        onClick={() => cancelTrip(trip._id)}
+                        disabled={pendingTripId === trip._id}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteDraftTrip(trip)}
+                        disabled={pendingTripId === trip._id}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   )}
 
                   {canManageTrips && trip.status ===
                     "Dispatched" && (
-                    <>
+                    <div className="trip-actions">
                       <button
-                        onClick={() =>
-                          completeTrip(
-                            trip._id
-                          )
-                        }
+                        onClick={() => completeTrip(trip._id)}
                         disabled={pendingTripId === trip._id}
                       >
                         Complete
@@ -241,17 +235,12 @@ function Trips() {
 
                       <button
                         className="ghost-btn"
-                        style={{
-                          marginLeft: 10,
-                        }}
-                        onClick={() =>
-                          cancelTrip(trip._id)
-                        }
+                        onClick={() => cancelTrip(trip._id)}
                         disabled={pendingTripId === trip._id}
                       >
                         Cancel
                       </button>
-                    </>
+                    </div>
                   )}
 
                   {canManageTrips && (trip.status ===

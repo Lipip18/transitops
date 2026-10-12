@@ -21,7 +21,7 @@ const {
 router.get(
   "/",
   protect,
-  authorize("Fleet Manager", "Driver"),
+  authorize("Fleet Manager", "Driver", "Admin", "Financial Analyst"),
   getTrips
 );
 

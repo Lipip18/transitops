@@ -18,7 +18,7 @@ const {
 router.get(
   "/users",
   protect,
-  authorize("Admin", "Fleet Manager"),
+  authorize("Admin"),
   getUsers
 );
 
@@ -40,7 +40,7 @@ router.put(
 router.delete(
   "/users/:id",
   protect,
-  authorize("Admin", "Fleet Manager"),
+  authorize("Admin"),
   validateObjectIdParam,
   deleteUser
 );

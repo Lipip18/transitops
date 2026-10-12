@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Fuel,
   Home,
+  IdCard,
   ShieldCheck,
   Truck,
   Users,
@@ -16,7 +17,7 @@ import { getStoredRole, roleAccess, roles } from "../data/roles";
 import "../styles/sidebar.css";
 
 const menus = [
-  { key: "dashboard", title: "Dashboard", icon: <Home size={18} />, path: "/" },
+  { key: "dashboard", title: "Dashboard", icon: <Home size={18} />, path: "/dashboard" },
   { key: "vehicles", title: "Vehicles", icon: <Truck size={18} />, path: "/vehicles" },
   { key: "drivers", title: "Drivers", icon: <Users size={18} />, path: "/drivers" },
   { key: "trips", title: "Trips", icon: <Car size={18} />, path: "/trips" },
@@ -26,6 +27,7 @@ const menus = [
   { key: "notifications", title: "Notifications", icon: <ClipboardList size={18} />, path: "/notifications" },
   { key: "users", title: "Users", icon: <ShieldCheck size={18} />, path: "/users" },
   { key: "audit", title: "Audit Logs", icon: <ClipboardList size={18} />, path: "/audit" },
+  { key: "profile", title: "Profile", icon: <IdCard size={18} />, path: "/profile" },
 ];
 
 function Sidebar() {
@@ -46,7 +48,7 @@ function Sidebar() {
           <NavLink
             key={menu.path}
             to={menu.path}
-            end={menu.path === "/"}
+            end
             className={({ isActive }) => (isActive ? "menu active" : "menu")}
           >
             {menu.icon}

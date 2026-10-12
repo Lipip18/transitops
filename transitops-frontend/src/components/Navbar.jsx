@@ -5,7 +5,7 @@ import { roles } from "../data/roles";
 import "../styles/navbar.css";
 
 const titles = {
-  "/": "Operations Dashboard",
+  "/dashboard": "Operations Dashboard",
   "/vehicles": "Vehicle Registry",
   "/drivers": "Driver Management",
   "/trips": "Trip Management",
@@ -15,6 +15,7 @@ const titles = {
   "/notifications": "Notifications",
   "/users": "User Management",
   "/audit": "Audit Logs",
+  "/profile": "My Profile",
 };
 
 function Navbar() {

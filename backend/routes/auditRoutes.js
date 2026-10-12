@@ -14,7 +14,7 @@ const {
 router.get(
   "/",
   protect,
-  authorize("Admin", "Fleet Manager"),
+  authorize("Admin"),
   getAuditLogs
 );
 

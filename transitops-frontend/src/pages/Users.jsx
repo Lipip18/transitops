@@ -28,7 +28,7 @@ function Users() {
   const [errorMessage, setErrorMessage] = useState("");
   const [form, setForm] = useState(null);
   const isAdmin = getStoredRole() === "Admin";
-  const canDeleteUsers = ["Admin", "Fleet Manager"].includes(getStoredRole());
+  const canDeleteUsers = isAdmin;
 
   const fetchUsers = useCallback(async () => {
     try {

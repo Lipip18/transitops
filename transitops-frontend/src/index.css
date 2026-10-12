@@ -495,6 +495,27 @@ button:disabled {
   background: #f8fbff;
 }
 
+.trip-actions-column,
+.trip-actions-cell {
+  width: 280px;
+  min-width: 280px;
+}
+
+.trip-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.trip-actions button {
+  justify-content: center;
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
 .page-content form.record-form,
 .page-content form:not(.login-form):not(.search-form) {
   max-width: 900px;
@@ -919,6 +940,27 @@ button:disabled {
   .profile-panel {
     max-width: 720px;
     padding: 8px 20px;
+  }
+
+  .profile-form {
+    max-width: 760px;
+  }
+
+  .profile-form label {
+    display: grid;
+    gap: 5px;
+    color: var(--ink-500);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .profile-form input[readonly] {
+    background: #F1F5F9;
+  }
+
+  .profile-joined {
+    color: var(--ink-500);
+    font-size: 12px;
   }
 
   .profile-details {

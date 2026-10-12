@@ -4,26 +4,19 @@ import { toast } from "react-toastify";
 import {
   ArrowRight,
   Fuel,
+  Home,
   ShieldCheck,
   Truck,
   Users,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import API from "../services/api";
 import { roles } from "../data/roles";
 import "./Login.css";
 
-const roleIcon = {
-  "Fleet Manager": Truck,
-  Driver: ArrowRight,
-  "Safety Officer": ShieldCheck,
-  "Financial Analyst": Fuel,
-  Admin: ShieldCheck,
-};
-
 function Login() {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -33,12 +26,7 @@ function Login() {
     return () => clearInterval(timer);
   }, []);
 
-  const pickRole = (role) => {
-    setSelectedRole(role.id);
-  };
-
   const handleChange = (e) => {
-    setSelectedRole(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -68,10 +56,10 @@ function Login() {
     <div className="login-screen">
       <aside className="login-brand">
         <div className="login-brand-top">
-          <div className="brand-mark">
+          <Link className="brand-mark" to="/" aria-label="TransitOps home">
             <span className="brand-mark-dot" />
             TransitOps
-          </div>
+          </Link>
           <span className="dispatch-clock">
             {now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
             {" · "}
@@ -147,42 +135,16 @@ function Login() {
           </li>
         </ul>
 
-        <div className="route-line" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
       </aside>
 
       <main className="login-form-side">
         <div className="login-form-wrap">
+          <Link className="auth-home-link" to="/">
+            <Home size={15} /> Back to home
+          </Link>
           <div className="login-form-head">
-            <h2>Sign in to your console</h2>
-            <p>Select your role and sign in with your TransitOps account credentials.</p>
-          </div>
-
-          <div className="role-grid">
-            {roles.map((role) => {
-              const Icon = roleIcon[role.id];
-              const active = selectedRole === role.id;
-              return (
-                <button
-                  type="button"
-                  key={role.id}
-                  className={`role-ticket accent-${role.accent} ${active ? "role-ticket-active" : ""}`}
-                  onClick={() => pickRole(role)}
-                >
-                  <span className="role-ticket-tag">{role.ticket}</span>
-                  <span className="role-ticket-body">
-                    <span className="role-ticket-icon">
-                      <Icon size={18} />
-                    </span>
-                    <span className="role-ticket-label">{role.label}</span>
-                    <span className="role-ticket-summary">{role.summary}</span>
-                  </span>
-                </button>
-              );
-            })}
+            <h2>Sign in to TransitOps</h2>
+            <p>Your account role determines the workspace you can access.</p>
           </div>
 
           <form onSubmit={login} className="credentials-form">
@@ -218,7 +180,7 @@ function Login() {
             </button>
 
             <p className="login-hint">
-              Sign in with an account registered in TransitOps.
+              New to TransitOps? <Link to="/signup">Create an account</Link>
             </p>
           </form>
         </div>
