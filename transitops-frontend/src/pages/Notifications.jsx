@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import API from "../services/api";
+import PageHeader from "../components/PageHeader";
 
 function Notifications() {
   const [notifications, setNotifications] =
@@ -43,52 +44,46 @@ function Notifications() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Notifications</h1>
-      {loading && <p>Loading notifications...</p>}
+    <div className="resource-page">
+      <PageHeader
+        title="Notifications"
+        subtitle="Operational updates relevant to your role."
+      />
+      {loading && <p aria-live="polite">Loading notifications...</p>}
       {errorMessage && (
-        <div role="alert">
-          <p>{errorMessage}</p>
-          <button onClick={fetchNotifications}>Retry</button>
+        <div className="notice notice-error" role="alert">
+          <span>{errorMessage}</span>
+          <button className="ghost-btn" onClick={fetchNotifications}>Retry</button>
         </div>
       )}
 
-      {notifications.map((n) => (
-        <div
-          key={n._id}
-          style={{
-            border: "1px solid #ddd",
-            padding: 15,
-            marginTop: 15,
-            borderRadius: 8,
-            background: n.isRead
-              ? "#fff"
-              : "#e0f2fe",
-          }}
-        >
-          <h3>{n.title}</h3>
-
-          <p>{n.message}</p>
-
-          <small>
-            {new Date(
-              n.createdAt
-            ).toLocaleString()}
-          </small>
-
-          {!n.isRead && (
-            <button
-              onClick={() =>
-                markRead(n._id)
-              }
-            >
-              Mark Read
-            </button>
-          )}
-        </div>
-      ))}
+      <div className="notification-list">
+        {notifications.map((n) => (
+          <article
+            key={n._id}
+            className={`notification-item${n.isRead ? "" : " notification-unread"}`}
+          >
+            <div className="notification-copy">
+              <h3>{n.title}</h3>
+              <p>{n.message}</p>
+              <small>{new Date(n.createdAt).toLocaleString()}</small>
+            </div>
+            {!n.isRead && (
+              <button
+                className="ghost-btn notification-read"
+                onClick={() => markRead(n._id)}
+              >
+                Mark read
+              </button>
+            )}
+          </article>
+        ))}
+      </div>
       {!loading && !errorMessage && notifications.length === 0 && (
-        <p>No notifications.</p>
+        <div className="empty-state">
+          <h2>You're all caught up</h2>
+          <p>No notifications are available right now.</p>
+        </div>
       )}
     </div>
   );

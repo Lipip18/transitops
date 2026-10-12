@@ -1,7 +1,6 @@
-import { Bell, LogOut, Moon, Sun } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { useTheme } from "../context/ThemeContext";
 import { roles } from "../data/roles";
 import "../styles/navbar.css";
 
@@ -19,7 +18,6 @@ const titles = {
 };
 
 function Navbar() {
-  const { darkMode, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,10 +50,6 @@ function Navbar() {
       </div>
 
       <div className="nav-right">
-        <button className="theme-btn" onClick={toggleTheme} title="Toggle theme">
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-
         <button
           className="theme-btn"
           onClick={() => navigate("/notifications")}

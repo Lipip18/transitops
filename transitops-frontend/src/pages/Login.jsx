@@ -92,6 +92,42 @@ function Login() {
           </p>
         </div>
 
+        <div className="login-illustration" aria-hidden="true">
+          <svg viewBox="0 0 680 270" role="img">
+            <rect width="680" height="270" rx="16" fill="#EFF6FF" />
+            <circle cx="565" cy="62" r="27" fill="#CCFBF1" />
+            <path d="M0 211h680v59H0z" fill="#E2E8F0" />
+            <path d="M0 220h680" stroke="#CBD5E1" strokeWidth="2" />
+            <path
+              d="M34 224c75-22 95-84 174-84 53 0 69 37 113 37 54 0 64-79 136-79 62 0 78 66 189 54"
+              fill="none"
+              stroke="#94A3B8"
+              strokeDasharray="7 10"
+              strokeLinecap="round"
+              strokeWidth="3"
+            />
+            <path d="M78 167h43v43H78zM127 150h32v60h-32zM516 140h36v70h-36zM558 160h54v50h-54z" fill="#DBEAFE" />
+            <path d="M93 178h12M139 163h8M528 153h11M571 173h16" stroke="#93C5FD" strokeLinecap="round" strokeWidth="3" />
+            <rect x="167" y="103" width="258" height="102" rx="10" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="2" />
+            <path d="M183 126h222M183 184h222" stroke="#E2E8F0" strokeWidth="3" />
+            <rect x="196" y="142" width="42" height="27" rx="5" fill="#DBEAFE" />
+            <path d="M207 153h20M217 143v25" stroke="#2563EB" strokeLinecap="round" strokeWidth="3" />
+            <path d="M425 139h67l35 37v29H425z" fill="#2563EB" />
+            <path d="M445 148h39l23 25h-62z" fill="#BFDBFE" />
+            <path d="M502 174h24" stroke="#FFFFFF" strokeLinecap="round" strokeWidth="3" />
+            <path d="M178 204h346" stroke="#172B4D" strokeLinecap="round" strokeWidth="6" />
+            <circle cx="226" cy="207" r="21" fill="#172B4D" />
+            <circle cx="226" cy="207" r="9" fill="#E2E8F0" />
+            <circle cx="475" cy="207" r="21" fill="#172B4D" />
+            <circle cx="475" cy="207" r="9" fill="#E2E8F0" />
+            <circle cx="565" cy="62" r="8" fill="#0F9D8A" />
+            <path d="M561 64h8M565 60v8" stroke="#FFFFFF" strokeLinecap="round" strokeWidth="2" />
+            <rect x="483" y="53" width="56" height="24" rx="12" fill="#FFFFFF" stroke="#DCE8F7" />
+            <circle cx="496" cy="65" r="4" fill="#16A34A" />
+            <path d="M506 65h22" stroke="#64748B" strokeLinecap="round" strokeWidth="3" />
+          </svg>
+        </div>
+
         <ul className="brand-stats">
           <li>
             <Truck size={16} />

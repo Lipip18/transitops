@@ -4,6 +4,8 @@ const router = express.Router();
 
 const {
   getUsers,
+  createUser,
+  updateUser,
   deleteUser,
 } = require("../controllers/adminController");
 
@@ -18,6 +20,21 @@ router.get(
   protect,
   authorize("Admin", "Fleet Manager"),
   getUsers
+);
+
+router.post(
+  "/users",
+  protect,
+  authorize("Admin"),
+  createUser
+);
+
+router.put(
+  "/users/:id",
+  protect,
+  authorize("Admin"),
+  validateObjectIdParam,
+  updateUser
 );
 
 router.delete(

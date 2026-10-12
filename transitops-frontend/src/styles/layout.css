@@ -14,30 +14,13 @@
 }
 
 .page-content {
-  padding: 24px 28px 40px;
+  padding: 30px clamp(18px, 3vw, 42px) 48px;
   overflow: auto;
   height: 100%;
   box-sizing: border-box;
 }
 
-/* -- dark mode: applied to <body class="dark"> by ThemeContext -- */
-body.dark {
-  --bg: #0d1220;
-  --surface: #151b2c;
-  --surface-2: #1b2338;
-  --border: #262f47;
-  --ink-900: #f2f4f9;
-  --ink-700: #cdd3e2;
-  --ink-500: #8b93a9;
-  --ink-400: #6b7288;
-  color: var(--ink-700);
-}
-
-body.dark .layout {
-  background: var(--bg);
-}
-
 .primary-btn {
-  background: var(--ink-900);
+  background: var(--accent);
   color: #fff;
 }

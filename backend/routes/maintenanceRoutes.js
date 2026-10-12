@@ -6,6 +6,7 @@ const {
   createMaintenance,
   getMaintenance,
   completeMaintenance,
+  deleteMaintenance,
 } = require("../controllers/maintenanceController");
 
 const {
@@ -34,6 +35,14 @@ router.put(
   authorize("Fleet Manager"),
   validateObjectIdParam,
   completeMaintenance
+);
+
+router.delete(
+  "/:id",
+  protect,
+  authorize("Fleet Manager"),
+  validateObjectIdParam,
+  deleteMaintenance
 );
 
 module.exports = router;

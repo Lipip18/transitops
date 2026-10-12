@@ -7,6 +7,8 @@ import DriverForm from "../components/DriverForm";
 import SearchBar from "../components/SearchBar";
 import StatusFilter from "../components/StatusFilter";
 import { hasRole } from "../data/roles";
+import DataTable from "../components/DataTable";
+import PageHeader from "../components/PageHeader";
 
 function Drivers() {
   const [drivers, setDrivers] = useState([]);
@@ -20,6 +22,9 @@ function Drivers() {
   const [totalDrivers, setTotalDrivers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [editingDriver, setEditingDriver] = useState(null);
+  const [showDriverForm, setShowDriverForm] = useState(false);
+  const canManageDrivers = hasRole("Fleet Manager");
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -58,19 +63,52 @@ function Drivers() {
     LicenseExpiryDate: driver.licenseExpiryDate,
   }));
 
+  const saveDriver = async () => {
+    setEditingDriver(null);
+    setShowDriverForm(false);
+    await fetchDrivers();
+  };
+
+  const deleteDriver = async (driver) => {
+    if (!window.confirm(`Delete ${driver.name}?`)) return;
+    try {
+      await API.delete(`/drivers/${driver._id}`);
+      await fetchDrivers();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Unable to delete driver.");
+    }
+  };
+
+  const columns = [
+    { key: "name", label: "Name" },
+    { key: "licenseNumber", label: "License No." },
+    { key: "licenseCategory", label: "Category" },
+    { key: "contactNumber", label: "Contact" },
+    { key: "safetyScore", label: "Safety Score" },
+    { key: "status", label: "Status", render: (driver) => <span className={`pill pill-${driver.status.toLowerCase().replaceAll(" ", "")}`}>{driver.status}</span> },
+  ];
+
   return (
     <div style={{ padding: 20 }}>
-      <h1>Driver Management</h1>
+      <PageHeader
+        title="Driver Management"
+        subtitle={`${totalDrivers} drivers in your fleet`}
+        action={(
+          <>
+            <CSVLink filename="drivers-report.csv" data={csvData} className="ghost-btn" style={loading || errorMessage ? { pointerEvents: "none", opacity: 0.6 } : undefined}>Export CSV</CSVLink>
+            {canManageDrivers && <button className="primary-btn" onClick={() => { setEditingDriver(null); setShowDriverForm((visible) => !visible); }}>+ Add driver</button>}
+          </>
+        )}
+      />
 
-      {hasRole("Fleet Manager") && (
-        <DriverForm onDriverAdded={fetchDrivers} />
+      {(showDriverForm || editingDriver) && canManageDrivers && (
+        <DriverForm
+          key={editingDriver?._id || "new-driver"}
+          driver={editingDriver}
+          onDriverSaved={saveDriver}
+          onCancel={() => { setEditingDriver(null); setShowDriverForm(false); }}
+        />
       )}
-
-      <br />
-
-      <p>
-        <strong>Total Drivers:</strong> {totalDrivers}
-      </p>
 
       {/* Search + Filter */}
 
@@ -115,87 +153,15 @@ function Drivers() {
           />
         </div>
 
-        <CSVLink
-          filename="drivers-report.csv"
-          data={csvData}
-          style={{
-            background: "#16a34a",
-            color: "white",
-            padding: "10px 18px",
-            borderRadius: 6,
-            textDecoration: "none",
-            ...(loading || errorMessage ? { pointerEvents: "none", opacity: 0.6 } : {}),
-          }}
-        >
-          Export CSV
-        </CSVLink>
       </div>
 
-      {/* Driver Table */}
-
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          background: "white",
-        }}
-      >
-        <thead
-          style={{
-            background: "#1e293b",
-            color: "white",
-          }}
-        >
-          <tr>
-            <th>Name</th>
-            <th>License No.</th>
-            <th>Category</th>
-            <th>Contact</th>
-            <th>Safety Score</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={6} style={{ textAlign: "center", padding: 20 }}>
-                Loading drivers...
-              </td>
-            </tr>
-          ) : errorMessage ? (
-            <tr>
-              <td colSpan={6} style={{ textAlign: "center", padding: 20 }}>
-                <span role="alert">{errorMessage}</span>{" "}
-                <button onClick={fetchDrivers} disabled={loading}>Retry</button>
-              </td>
-            </tr>
-          ) : drivers.length === 0 ? (
-            <tr>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: "center",
-                  padding: 20,
-                }}
-              >
-                No Drivers Found
-              </td>
-            </tr>
-          ) : (
-            drivers.map((driver) => (
-              <tr key={driver._id}>
-                <td>{driver.name}</td>
-                <td>{driver.licenseNumber}</td>
-                <td>{driver.licenseCategory}</td>
-                <td>{driver.contactNumber}</td>
-                <td>{driver.safetyScore}</td>
-                <td>{driver.status}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      {errorMessage && <div className="notice notice-error" role="alert">{errorMessage}<button className="ghost-btn" onClick={fetchDrivers} disabled={loading}>Retry</button></div>}
+      {loading ? <p>Loading drivers...</p> : drivers.length === 0 ? <p className="empty-table">No drivers found.</p> : (
+        <DataTable columns={columns} data={drivers} actions={canManageDrivers ? {
+          edit: (driver) => { setShowDriverForm(false); setEditingDriver(driver); },
+          delete: deleteDriver,
+        } : {}} />
+      )}
 
       {/* Pagination */}
 

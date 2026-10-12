@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import KPIcard from "../components/KPIcard";
 import API from "../services/api";
+import PageHeader from "../components/PageHeader";
 
 function Reports() {
   const [analytics, setAnalytics] = useState(null);
@@ -19,8 +20,10 @@ function Reports() {
       const { data } = await API.get("/reports/analytics");
 
       setAnalytics(data);
+    } catch (error) {
       setErrorMessage(
-        error.response?.data?.message || "Failed to load analytics. Check the API connection and retry."
+        error.response?.data?.message ||
+          "Failed to load analytics. Check the API connection and retry."
       );
     } finally {
       setLoading(false);
@@ -72,40 +75,24 @@ function Reports() {
 
   if (loading) {
     return (
-      <div style={{ padding: "20px" }}>
-        <h2>Loading Reports...</h2>
+      <div className="resource-page">
+        <h2>Loading reports...</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "25px",
-        }}
-      >
-        <h1>Reports & Analytics</h1>
-
-        <button
-          onClick={fetchAnalytics}
-          disabled={loading}
-          style={{
-            padding: "10px 16px",
-            cursor: "pointer",
-          }}
-        >
-          Refresh
-        </button>
-      </div>
+    <div className="resource-page">
+      <PageHeader
+        title="Reports & Analytics"
+        subtitle="Performance and operating costs from recorded fleet activity."
+        action={<button className="ghost-btn" onClick={fetchAnalytics} disabled={loading}>Refresh</button>}
+      />
 
       {errorMessage && (
-        <div role="alert" style={{ marginBottom: "16px" }}>
-          <p>{errorMessage}</p>
-          <button onClick={fetchAnalytics} disabled={loading}>Retry</button>
+        <div className="notice notice-error" role="alert">
+          <span>{errorMessage}</span>
+          <button className="ghost-btn" onClick={fetchAnalytics} disabled={loading}>Retry</button>
         </div>
       )}
 
@@ -174,19 +161,7 @@ function Reports() {
         />
       </div>
 
-      <button
-        onClick={exportCSV}
-        disabled={!analytics}
-        style={{
-          marginTop: "30px",
-          padding: "12px 20px",
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-        }}
-      >
+      <button className="primary-btn" onClick={exportCSV} disabled={!analytics}>
         Export Report CSV
       </button>
     </div>

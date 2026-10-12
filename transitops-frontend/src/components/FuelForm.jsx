@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
-function FuelForm({ refresh }) {
+function FuelForm({ refresh, fuelLog, onCancel }) {
   const [vehicles, setVehicles] = useState([]);
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    vehicle: "",
-    liters: "",
-    pricePerLiter: "",
-    odometerReading: "",
+    vehicle: fuelLog?.vehicle?._id || fuelLog?.vehicle || "",
+    liters: fuelLog?.liters || "",
+    pricePerLiter: fuelLog?.pricePerLiter || "",
+    odometerReading: fuelLog?.odometerReading || "",
   });
 
   useEffect(() => {
@@ -16,36 +17,50 @@ function FuelForm({ refresh }) {
   }, []);
 
   const loadVehicles = async () => {
-    const { data } = await API.get("/vehicles");
-
-    setVehicles(data.vehicles || []);
+    try {
+      const { data } = await API.get("/vehicles", { params: { limit: 100 } });
+      setVehicles(data.vehicles || []);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Unable to load vehicles.");
+    }
   };
 
   const submit = async (e) => {
     e.preventDefault();
-
-    await API.post("/fuel", {
-      vehicle: formData.vehicle,
-      liters: Number(formData.liters),
-      pricePerLiter: Number(formData.pricePerLiter),
-      odometerReading: Number(formData.odometerReading),
-    });
-
-    refresh();
-
-    setFormData({
-      vehicle: "",
-      liters: "",
-      pricePerLiter: "",
-      odometerReading: "",
-    });
+    setSaving(true);
+    setErrorMessage("");
+    try {
+      const payload = {
+        vehicle: formData.vehicle,
+        liters: Number(formData.liters),
+        pricePerLiter: Number(formData.pricePerLiter),
+        odometerReading: Number(formData.odometerReading),
+      };
+      if (fuelLog?._id) {
+        await API.put(`/fuel/${fuelLog._id}`, payload);
+      } else {
+        await API.post("/fuel", payload);
+      }
+      await refresh();
+      if (fuelLog && onCancel) onCancel();
+      setFormData({
+        vehicle: "",
+        liters: "",
+        pricePerLiter: "",
+        odometerReading: "",
+      });
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Unable to save fuel log.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <form onSubmit={submit}>
-      <h3>Add Fuel Log</h3>
-
+    <form className="record-form" onSubmit={submit}>
+      <h3>{fuelLog ? "Edit fuel log" : "Add fuel log"}</h3>
       <select
+        name="vehicle"
         value={formData.vehicle}
         required
         onChange={(e) =>
@@ -68,6 +83,7 @@ function FuelForm({ refresh }) {
       </select>
 
       <input
+        required
         type="number"
         placeholder="Liters"
         min="0.01"
@@ -82,6 +98,7 @@ function FuelForm({ refresh }) {
       />
 
       <input
+        required
         type="number"
         placeholder="Price per Liter"
         min="0.01"
@@ -96,6 +113,7 @@ function FuelForm({ refresh }) {
       />
 
       <input
+        required
         type="number"
         placeholder="Odometer Reading"
         min="0"
@@ -109,7 +127,11 @@ function FuelForm({ refresh }) {
         }
       />
 
-      <button>Add</button>
+      {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+      <div className="form-actions">
+        <button type="submit" disabled={saving}>{saving ? "Saving..." : fuelLog ? "Save changes" : "Add fuel log"}</button>
+        {onCancel && <button type="button" className="ghost-btn" onClick={onCancel}>Cancel</button>}
+      </div>
     </form>
   );
 }

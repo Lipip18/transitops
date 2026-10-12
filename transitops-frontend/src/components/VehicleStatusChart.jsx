@@ -2,6 +2,7 @@ import {
     Cell,
     Pie,
     PieChart,
+    ResponsiveContainer,
     Tooltip,
 } from "recharts";
 
@@ -30,31 +31,19 @@ function VehicleStatusChart({
     },
   ];
 
-  const COLORS = [
-    "#22c55e",
-    "#f59e0b",
-    "#3b82f6",
-    "#ef4444",
-  ];
+  const COLORS = ["#16A34A", "#D97706", "#0F9D8A", "#94A3B8"];
 
   return (
-    <PieChart width={350} height={250}>
-      <Pie
-        data={data}
-        dataKey="value"
-        outerRadius={90}
-        label
-      >
-        {data.map((entry, index) => (
-          <Cell
-            key={index}
-            fill={COLORS[index]}
-          />
-        ))}
-      </Pie>
-
-      <Tooltip />
-    </PieChart>
+    <ResponsiveContainer width="100%" height={280}>
+      <PieChart>
+        <Pie data={data} dataKey="value" outerRadius={90} label>
+          {data.map((entry, index) => (
+            <Cell key={entry.name} fill={COLORS[index]} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
   );
 }
 

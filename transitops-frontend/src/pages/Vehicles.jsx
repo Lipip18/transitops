@@ -8,6 +8,9 @@ import EmptyState from "../components/EmptyState";
 import PageHeader from "../components/PageHeader";
 import SearchBar from "../components/SearchBar";
 import StatusFilter from "../components/StatusFilter";
+import AddVehicleButton from "../components/AddVehicleButton";
+import VehicleForm from "../components/VehicleForm";
+import { hasRole } from "../data/roles";
 
 function Vehicles() {
   const [vehicles, setVehicles] = useState([]);
@@ -19,6 +22,9 @@ function Vehicles() {
   const [totalVehicles, setTotalVehicles] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [editingVehicle, setEditingVehicle] = useState(null);
+  const [showVehicleForm, setShowVehicleForm] = useState(false);
+  const canManageVehicles = hasRole("Fleet Manager");
 
   const fetchVehicles = useCallback(async () => {
     try {
@@ -48,30 +54,12 @@ function Vehicles() {
   }, [fetchVehicles]);
 
   const columns = [
-    {
-      Header: "Registration",
-      accessor: "registrationNumber",
-    },
-    {
-      Header: "Vehicle",
-      accessor: "vehicleName",
-    },
-    {
-      Header: "Type",
-      accessor: "type",
-    },
-    {
-      Header: "Capacity",
-      accessor: "maximumLoadCapacity",
-    },
-    {
-      Header: "Odometer",
-      accessor: "odometer",
-    },
-    {
-      Header: "Status",
-      accessor: "status",
-    },
+    { key: "registrationNumber", label: "Registration" },
+    { key: "vehicleName", label: "Vehicle" },
+    { key: "type", label: "Type" },
+    { key: "maximumLoadCapacity", label: "Capacity (kg)" },
+    { key: "odometer", label: "Odometer (km)" },
+    { key: "status", label: "Status", render: (vehicle) => <span className={`pill pill-${vehicle.status.toLowerCase().replaceAll(" ", "")}`}>{vehicle.status}</span> },
   ];
 
   const csvData = vehicles.map((vehicle) => ({
@@ -83,23 +71,43 @@ function Vehicles() {
     Status: vehicle.status,
   }));
 
+  const deleteVehicle = async (vehicle) => {
+    if (!window.confirm(`Delete ${vehicle.vehicleName} (${vehicle.registrationNumber})?`)) return;
+    try {
+      await API.delete(`/vehicles/${vehicle._id}`);
+      await fetchVehicles();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Unable to delete vehicle.");
+    }
+  };
+
+  const saveVehicle = async () => {
+    setEditingVehicle(null);
+    setShowVehicleForm(false);
+    await fetchVehicles();
+  };
+
   return (
     <div>
-
       <PageHeader
         title="Fleet Vehicles"
         subtitle={`Total Vehicles : ${totalVehicles}`}
         action={
-          <CSVLink
-            data={csvData}
-            filename="vehicles.csv"
-            className="primary-btn"
-            style={loading || errorMessage ? { pointerEvents: "none", opacity: 0.6 } : undefined}
-          >
-            Export CSV
-          </CSVLink>
+          <>
+            <CSVLink data={csvData} filename="vehicles.csv" className="ghost-btn" style={loading || errorMessage ? { pointerEvents: "none", opacity: 0.6 } : undefined}>Export CSV</CSVLink>
+            {canManageVehicles && <AddVehicleButton onClick={() => { setEditingVehicle(null); setShowVehicleForm((visible) => !visible); }} />}
+          </>
         }
       />
+
+      {(showVehicleForm || editingVehicle) && canManageVehicles && (
+        <VehicleForm
+          key={editingVehicle?._id || "new-vehicle"}
+          vehicle={editingVehicle}
+          onVehicleSaved={saveVehicle}
+          onCancel={() => { setEditingVehicle(null); setShowVehicleForm(false); }}
+        />
+      )}
 
       <div
         style={{
@@ -151,6 +159,10 @@ function Vehicles() {
         <DataTable
           columns={columns}
           data={vehicles}
+          actions={canManageVehicles ? {
+            edit: (vehicle) => { setShowVehicleForm(false); setEditingVehicle(vehicle); },
+            delete: deleteVehicle,
+          } : {}}
         />
       )}
 

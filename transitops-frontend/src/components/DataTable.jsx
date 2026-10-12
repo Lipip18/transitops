@@ -21,8 +21,8 @@ function DataTable({
           <tr>
 
             {columns.map((column) => (
-              <th key={column.key}>
-                {column.label}
+              <th key={column.key || column.accessor}>
+                {column.label || column.Header}
               </th>
             ))}
 
@@ -43,10 +43,10 @@ function DataTable({
               <tr key={row._id}>
 
                 {columns.map((column) => (
-                  <td key={column.key}>
+                  <td key={column.key || column.accessor}>
                     {column.render
                       ? column.render(row)
-                      : row[column.key]}
+                      : row[column.key || column.accessor]}
                   </td>
                 ))}
 
@@ -61,6 +61,8 @@ function DataTable({
                       {actions.view && (
                         <button
                           className="view-btn"
+                          type="button"
+                          aria-label="View record"
                           onClick={() =>
                             actions.view(row)
                           }
@@ -72,6 +74,8 @@ function DataTable({
                       {actions.edit && (
                         <button
                           className="edit-btn"
+                          type="button"
+                          aria-label="Edit record"
                           onClick={() =>
                             actions.edit(row)
                           }
@@ -83,6 +87,8 @@ function DataTable({
                       {actions.delete && (
                         <button
                           className="delete-btn"
+                          type="button"
+                          aria-label="Delete record"
                           onClick={() =>
                             actions.delete(row)
                           }

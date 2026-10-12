@@ -4,6 +4,8 @@ const router = express.Router();
 
 const {
   createTrip,
+  updateDraftTrip,
+  deleteDraftTrip,
   getTrips,
   dispatchTrip,
   completeTrip,
@@ -28,6 +30,22 @@ router.post(
   protect,
   authorize("Fleet Manager"),
   createTrip
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorize("Fleet Manager"),
+  validateObjectIdParam,
+  updateDraftTrip
+);
+
+router.delete(
+  "/:id",
+  protect,
+  authorize("Fleet Manager"),
+  validateObjectIdParam,
+  deleteDraftTrip
 );
 
 router.put(

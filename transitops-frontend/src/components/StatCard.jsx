@@ -1,6 +1,6 @@
 import "./StatCard.css";
 
-function StatCard({ title, value, icon, color = "#10151f", trend }) {
+function StatCard({ title, value, icon, color = "#2563EB", trend }) {
   return (
     <div className="stat-card">
       <div className="stat-icon" style={{ background: color }}>

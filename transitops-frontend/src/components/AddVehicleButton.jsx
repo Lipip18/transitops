@@ -6,6 +6,7 @@ function AddVehicleButton({
 
     <button
       className="primary-btn"
+      type="button"
       onClick={onClick}
     >
       + Add Vehicle

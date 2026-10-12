@@ -155,6 +155,116 @@ const createTrip = async (req, res) => {
   }
 };
 
+const updateDraftTrip = async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) return res.status(404).json({ message: "Trip not found." });
+    if (trip.status !== "Draft") {
+      return res.status(400).json({ message: "Only draft trips can be edited." });
+    }
+
+    const fields = [
+      "source",
+      "destination",
+      "vehicle",
+      "driver",
+      "cargoWeight",
+      "cargoType",
+      "plannedDistance",
+      "estimatedDuration",
+    ];
+    const updates = Object.fromEntries(
+      fields.filter((field) => req.body[field] !== undefined).map((field) => [field, req.body[field]])
+    );
+    const source = String(updates.source ?? trip.source).trim();
+    const destination = String(updates.destination ?? trip.destination).trim();
+    const vehicleId = updates.vehicle ?? trip.vehicle;
+    const driverId = updates.driver ?? trip.driver;
+    const cargoWeight = Number(updates.cargoWeight ?? trip.cargoWeight);
+    const plannedDistance = Number(updates.plannedDistance ?? trip.plannedDistance);
+
+    if (
+      !source ||
+      !destination ||
+      !Number.isFinite(cargoWeight) ||
+      cargoWeight < 0 ||
+      !Number.isFinite(plannedDistance) ||
+      plannedDistance <= 0
+    ) {
+      return res.status(400).json({ message: "Trip details and planned distance must be valid." });
+    }
+
+    const [vehicle, driver] = await Promise.all([
+      Vehicle.findById(vehicleId),
+      Driver.findById(driverId),
+    ]);
+    if (!vehicle) return res.status(404).json({ message: "Vehicle not found." });
+    if (!driver) return res.status(404).json({ message: "Driver not found." });
+    if (vehicle.status !== "Available") {
+      return res.status(400).json({ message: "Only available vehicles can be assigned to a trip." });
+    }
+    if (driver.status !== "Available") {
+      return res.status(400).json({ message: "Only available drivers can be assigned to a trip." });
+    }
+    if (new Date(driver.licenseExpiryDate) <= new Date()) {
+      return res.status(400).json({ message: "Driver license has expired." });
+    }
+    if (cargoWeight > vehicle.maximumLoadCapacity) {
+      return res.status(400).json({ message: "Cargo exceeds vehicle capacity." });
+    }
+
+    Object.assign(trip, updates, {
+      source,
+      destination,
+      vehicle: vehicle._id,
+      driver: driver._id,
+      cargoWeight,
+      plannedDistance,
+    });
+    await trip.save();
+    await recordAuditLog({
+      actor: req.user,
+      action: "Trip Updated",
+      entity: "Trip",
+      entityId: trip._id,
+      metadata: { source, destination },
+    });
+    return res.status(200).json(trip);
+  } catch (error) {
+    const isBadRequest = ["ValidationError", "CastError", "BSONError"].includes(error.name);
+    if (!isBadRequest) console.error("Trip update failed:", error.name || "Error");
+    return res.status(isBadRequest ? 400 : 500).json({
+      message: isBadRequest ? error.message : "Unable to update trip.",
+    });
+  }
+};
+
+const deleteDraftTrip = async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) return res.status(404).json({ message: "Trip not found." });
+    if (trip.status !== "Draft") {
+      return res.status(400).json({ message: "Only draft trips can be deleted." });
+    }
+
+    await trip.deleteOne();
+    await recordAuditLog({
+      actor: req.user,
+      action: "Trip Deleted",
+      entity: "Trip",
+      entityId: trip._id,
+      metadata: { source: trip.source, destination: trip.destination },
+    });
+    return res.status(200).json({ message: "Draft trip deleted successfully." });
+  } catch (error) {
+    const isBadRequest = error.name === "CastError";
+    if (!isBadRequest) console.error("Trip deletion failed:", error.name || "Error");
+    return res.status(isBadRequest ? 400 : 500).json({
+      message: isBadRequest ? "Invalid trip id." : "Unable to delete trip.",
+    });
+  }
+};
+
 const dispatchTrip = async (req, res) => {
   const session = await mongoose.startSession();
   let dispatchedTrip;
@@ -448,6 +558,8 @@ const cancelTrip = async (req, res) => {
 module.exports = {
   getTrips,
   createTrip,
+  updateDraftTrip,
+  deleteDraftTrip,
   dispatchTrip,
   completeTrip,
   cancelTrip,

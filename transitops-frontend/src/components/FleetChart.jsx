@@ -28,9 +28,9 @@ function FleetChart({
   ];
 
   const COLORS = [
-    "#22c55e", // Green
-    "#f59e0b", // Orange
-    "#3b82f6", // Blue
+    "#16A34A",
+    "#D97706",
+    "#0F9D8A",
   ];
 
   const hasData = data.some(
@@ -76,7 +76,7 @@ function FleetChart({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            color: "#64748b",
+            color: "var(--ink-500)",
             fontSize: "16px",
           }}
         >

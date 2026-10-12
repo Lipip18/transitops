@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import MaintenanceForm from "../components/MaintenanceForm";
 import API from "../services/api";
 import { hasRole } from "../data/roles";
+import PageHeader from "../components/PageHeader";
 
 function Maintenance() {
   const [maintenanceLogs, setMaintenanceLogs] = useState([]);
@@ -48,35 +49,23 @@ function Maintenance() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Maintenance Management</h1>
+    <div className="resource-page">
+      <PageHeader title="Maintenance" subtitle="Schedule and track vehicle maintenance." />
 
       {canManageMaintenance && (
         <MaintenanceForm onMaintenanceAdded={fetchMaintenanceLogs} />
       )}
 
-      <br />
       {errorMessage && (
-        <div role="alert">
-          <p>{errorMessage}</p>
-          <button onClick={fetchMaintenanceLogs} disabled={loading}>Retry</button>
+        <div className="notice notice-error" role="alert">
+          <span>{errorMessage}</span>
+          <button className="ghost-btn" onClick={fetchMaintenanceLogs} disabled={loading}>Retry</button>
         </div>
       )}
 
-      <table
-        border="1"
-        cellPadding="10"
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          background: "white",
-        }}
-      >
+      <div className="table-container">
+      <table className="data-table">
         <thead
-          style={{
-            background: "#1e293b",
-            color: "white",
-          }}
         >
           <tr>
             <th>Vehicle</th>
@@ -110,7 +99,7 @@ function Maintenance() {
 
                 <td>₹{log.cost}</td>
 
-                <td>{log.status}</td>
+                <td><span className={`pill pill-${log.status.toLowerCase().replaceAll(" ", "")}`}>{log.status}</span></td>
 
                 <td>
                   {log.startDate
@@ -129,18 +118,35 @@ function Maintenance() {
                 </td>
 
                 <td>
-                  {canManageMaintenance && log.status === "Active" ? (
-                    <button
-                      onClick={() =>
-                        completeMaintenance(log._id)
-                      }
-                      disabled={pendingMaintenanceId === log._id}
-                    >
-                      Complete
-                    </button>
-                  ) : (
-                    "✔ Completed"
-                  )}
+                  <div className="row-actions">
+                    {canManageMaintenance && log.status === "Active" && (
+                      <button
+                        className="primary-btn"
+                        onClick={() => completeMaintenance(log._id)}
+                        disabled={pendingMaintenanceId === log._id}
+                      >
+                        Complete
+                      </button>
+                    )}
+                    {canManageMaintenance && log.status === "Completed" && (
+                      <button
+                        className="delete-btn"
+                        onClick={async () => {
+                          if (!window.confirm("Delete this completed maintenance record?")) return;
+                          try {
+                            await API.delete(`/maintenance/${log._id}`);
+                            await fetchMaintenanceLogs();
+                          } catch (error) {
+                            setErrorMessage(error.response?.data?.message || "Unable to delete maintenance record.");
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {!canManageMaintenance && log.status === "Completed" && "Completed"}
+                    {!canManageMaintenance && log.status !== "Completed" && "—"}
+                  </div>
                 </td>
               </tr>
             ))
@@ -159,6 +165,7 @@ function Maintenance() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

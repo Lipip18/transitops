@@ -3,10 +3,12 @@ import API from "../services/api";
 
 function MaintenanceForm({ onMaintenanceAdded }) {
   const [vehicles, setVehicles] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     vehicle: "",
-    maintenanceType: "",
+    maintenanceType: "Preventive",
     description: "",
     cost: "",
   });
@@ -18,11 +20,11 @@ function MaintenanceForm({ onMaintenanceAdded }) {
   const fetchVehicles = async () => {
     try {
       const { data } = await API.get("/vehicles", {
-        params: { availableForDispatch: true },
+        params: { availableForDispatch: true, limit: 100 },
       });
       setVehicles(data.vehicles || []);
     } catch (error) {
-      console.error(error);
+      setErrorMessage(error.response?.data?.message || "Unable to load available vehicles.");
     }
   };
 
@@ -40,19 +42,22 @@ function MaintenanceForm({ onMaintenanceAdded }) {
       !formData.vehicle ||
       !formData.maintenanceType ||
       !formData.description ||
-      !formData.cost
+      formData.cost === ""
     ) {
       return alert("Please fill all fields.");
     }
 
     try {
-      await API.post("/maintenance", formData);
-
-      alert("Maintenance started successfully.");
+      setSaving(true);
+      setErrorMessage("");
+      await API.post("/maintenance", {
+        ...formData,
+        cost: Number(formData.cost),
+      });
 
       setFormData({
         vehicle: "",
-        maintenanceType: "",
+        maintenanceType: "Preventive",
         description: "",
         cost: "",
       });
@@ -60,33 +65,24 @@ function MaintenanceForm({ onMaintenanceAdded }) {
       fetchVehicles();
 
       if (onMaintenanceAdded) {
-        onMaintenanceAdded();
+        await onMaintenanceAdded();
       }
 
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Failed to create maintenance."
-      );
+      setErrorMessage(error.response?.data?.message || "Failed to create maintenance.");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "8px",
-        marginBottom: "25px",
-      }}
-    >
-      <h3>Start Vehicle Maintenance</h3>
-
+    <form className="record-form" onSubmit={handleSubmit}>
+      <h3>Start vehicle maintenance</h3>
       <select
         name="vehicle"
         value={formData.vehicle}
         onChange={handleChange}
+        required
       >
         <option value="">Select Vehicle</option>
 
@@ -101,19 +97,14 @@ function MaintenanceForm({ onMaintenanceAdded }) {
         ))}
       </select>
 
-      <br />
-      <br />
-
-      <input
-        type="text"
+      <select
         name="maintenanceType"
-        placeholder="Maintenance Type"
         value={formData.maintenanceType}
         onChange={handleChange}
-      />
-
-      <br />
-      <br />
+        required
+      >
+        {["Preventive", "Corrective", "Engine Repair", "Oil Change", "Brake Service", "Tyre Replacement", "Battery Replacement", "General Service", "Insurance", "Other"].map((type) => <option key={type}>{type}</option>)}
+      </select>
 
       <textarea
         name="description"
@@ -121,25 +112,21 @@ function MaintenanceForm({ onMaintenanceAdded }) {
         placeholder="Maintenance Description"
         value={formData.description}
         onChange={handleChange}
+        required
       />
-
-      <br />
-      <br />
 
       <input
         type="number"
         name="cost"
         placeholder="Cost"
+        min="0"
+        step="any"
         value={formData.cost}
         onChange={handleChange}
+        required
       />
-
-      <br />
-      <br />
-
-      <button type="submit">
-        Start Maintenance
-      </button>
+      {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+      <div className="form-actions"><button type="submit" disabled={saving}>{saving ? "Starting..." : "Start maintenance"}</button></div>
     </form>
   );
 }

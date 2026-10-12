@@ -1,12 +1,12 @@
 .sidebar {
   width: 250px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, var(--dispatch-bg) 0%, #0c1120 100%);
-  color: var(--dispatch-text);
+  background: var(--surface);
+  color: var(--ink-700);
   display: flex;
   flex-direction: column;
   padding: 20px 14px;
-  border-right: 1px solid var(--dispatch-border);
+  border-right: 1px solid var(--border);
 }
 
 .sidebar-brand {
@@ -14,19 +14,20 @@
   align-items: center;
   gap: 9px;
   padding: 6px 10px 22px;
-  font-family: var(--font-display);
-  font-size: 17px;
-  letter-spacing: 0.4px;
-  color: #fff;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 19px;
+  letter-spacing: -0.03em;
+  color: var(--ink-900);
+  text-transform: none;
+  font-weight: 750;
 }
 
 .sidebar-brand-dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--amber);
-  box-shadow: 0 0 0 4px var(--amber-soft);
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
 .sidebar-nav {
@@ -42,7 +43,7 @@
   gap: 12px;
   padding: 10px 12px;
   text-decoration: none;
-  color: var(--dispatch-text-dim);
+  color: var(--ink-500);
   border-radius: var(--radius-sm);
   font-size: 13.5px;
   font-weight: 500;
@@ -51,21 +52,21 @@
 }
 
 .menu:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: var(--hover);
+  color: var(--ink-900);
 }
 
 .menu.active {
-  background: rgba(242, 169, 60, 0.12);
-  color: #fff;
-  border-left-color: var(--amber);
+  background: var(--accent-soft);
+  color: var(--accent-dim);
+  border-left-color: var(--accent);
 }
 
 .sidebar-role {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-top: 1px solid var(--dispatch-border);
+  border-top: 1px solid var(--border);
   padding-top: 14px;
   margin-top: 10px;
 }
@@ -74,26 +75,26 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--dispatch-panel-2);
-  border: 1px solid var(--dispatch-border);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--amber);
+  color: var(--accent-dim);
   flex-shrink: 0;
 }
 
 .sidebar-role-label {
-  color: #fff;
+  color: var(--ink-900);
   font-size: 13px;
   font-weight: 600;
   margin: 0;
 }
 
 .sidebar-role-scope {
-  color: var(--dispatch-text-dim);
+  color: var(--ink-500);
   font-size: 11px;
   margin: 2px 0 0;
 }

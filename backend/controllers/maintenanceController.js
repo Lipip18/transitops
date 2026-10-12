@@ -225,7 +225,21 @@ const deleteMaintenance = async (req, res) => {
       });
     }
 
+    if (!["Completed", "Cancelled"].includes(maintenance.status)) {
+      return res.status(400).json({
+        message: "Only completed or cancelled maintenance records can be deleted.",
+      });
+    }
+
     await maintenance.deleteOne();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "Maintenance Deleted",
+      entity: "Maintenance",
+      entityId: maintenance._id,
+      metadata: { vehicle: maintenance.vehicle, status: maintenance.status },
+    });
 
     res.status(200).json({
       message: "Maintenance record deleted successfully",

@@ -23,8 +23,8 @@
 .navbar-role-pill {
   font-size: 11px;
   font-weight: 600;
-  color: var(--amber-dim);
-  background: var(--amber-soft);
+  color: var(--accent-dim);
+  background: var(--accent-soft);
   padding: 3px 9px;
   border-radius: 999px;
   text-transform: uppercase;
@@ -75,7 +75,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--ink-900);
+  background: var(--accent);
   color: #fff;
   display: flex;
   align-items: center;

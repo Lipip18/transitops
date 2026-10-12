@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import TripForm from "../components/TripForm";
 import API from "../services/api";
 import { hasRole } from "../data/roles";
+import PageHeader from "../components/PageHeader";
 
 function Trips() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingTripId, setPendingTripId] = useState("");
+  const [showTripForm, setShowTripForm] = useState(false);
+  const [editingTrip, setEditingTrip] = useState(null);
   const canManageTrips = hasRole("Fleet Manager");
 
   const fetchTrips = useCallback(async () => {
@@ -122,35 +125,39 @@ function Trips() {
     }
   };
 
+  const deleteDraftTrip = async (trip) => {
+    if (!window.confirm("Delete this draft trip?")) return;
+    try {
+      setPendingTripId(trip._id);
+      await API.delete(`/trips/${trip._id}`);
+      await fetchTrips();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Unable to delete draft trip.");
+    } finally {
+      setPendingTripId("");
+    }
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Trip Management</h1>
+    <div className="resource-page">
+      <PageHeader
+        title="Trip Management"
+        subtitle={`${trips.length} recent trips`}
+        action={canManageTrips && <button className="primary-btn" onClick={() => { setEditingTrip(null); setShowTripForm((visible) => !visible); }}>+ Create trip</button>}
+      />
 
-      {canManageTrips && <TripForm onTripAdded={fetchTrips} />}
+      {canManageTrips && (showTripForm || editingTrip) && <TripForm key={editingTrip?._id || "new-trip"} trip={editingTrip} onTripAdded={async () => { setShowTripForm(false); await fetchTrips(); }} onCancel={() => { setEditingTrip(null); setShowTripForm(false); }} />}
 
-      <br />
       {errorMessage && (
-        <div role="alert">
-          <p>{errorMessage}</p>
-          <button onClick={fetchTrips} disabled={loading}>Retry</button>
+        <div className="notice notice-error" role="alert">
+          <span>{errorMessage}</span>
+          <button className="ghost-btn" onClick={fetchTrips} disabled={loading}>Retry</button>
         </div>
       )}
 
-      <table
-        border="1"
-        cellPadding="10"
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          background: "white",
-        }}
-      >
-        <thead
-          style={{
-            background: "#1e293b",
-            color: "white",
-          }}
-        >
+      <div className="table-container">
+      <table className="data-table">
+        <thead>
           <tr>
             <th>Source</th>
             <th>Destination</th>
@@ -180,18 +187,42 @@ function Trips() {
                   {trip.driver?.name || "-"}
                 </td>
 
-                <td>{trip.status}</td>
+                <td><span className={`pill pill-${trip.status.toLowerCase().replaceAll(" ", "")}`}>{trip.status}</span></td>
 
                 <td>
                   {canManageTrips && trip.status === "Draft" && (
+                    <>
                     <button
-                      onClick={() =>
-                        dispatchTrip(trip._id)
-                      }
+                      className="edit-btn"
+                      onClick={() => { setShowTripForm(false); setEditingTrip(trip); }}
                       disabled={pendingTripId === trip._id}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => dispatchTrip(trip._id)}
+                      disabled={pendingTripId === trip._id}
+                      className="primary-btn"
                     >
                       Dispatch
                     </button>
+                    <button
+                      className="ghost-btn"
+                      style={{ marginLeft: 10 }}
+                      onClick={() => cancelTrip(trip._id)}
+                      disabled={pendingTripId === trip._id}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="delete-btn"
+                      style={{ marginLeft: 10 }}
+                      onClick={() => deleteDraftTrip(trip)}
+                      disabled={pendingTripId === trip._id}
+                    >
+                      Delete
+                    </button>
+                    </>
                   )}
 
                   {canManageTrips && trip.status ===
@@ -209,6 +240,7 @@ function Trips() {
                       </button>
 
                       <button
+                        className="ghost-btn"
                         style={{
                           marginLeft: 10,
                         }}
@@ -246,6 +278,7 @@ function Trips() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

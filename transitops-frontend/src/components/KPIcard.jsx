@@ -1,17 +1,20 @@
 import "./StatCard.css";
 
 const palette = {
-  amber: "#f2a93c",
-  teal: "#2fd3c0",
-  red: "#f0555b",
-  ink: "#10151f",
+  amber: { background: "#FEF3C7", color: "#D97706" },
+  teal: { background: "#CCFBF1", color: "#0F766E" },
+  red: { background: "#FEE2E2", color: "#DC2626" },
+  ink: { background: "#DBEAFE", color: "#2563EB" },
 };
 
 function KPIcard({ title, value, icon, tone = "ink" }) {
   return (
     <div className="stat-card">
       {icon && (
-        <div className="stat-icon" style={{ background: palette[tone] || palette.ink }}>
+        <div
+          className="stat-icon"
+          style={palette[tone] || palette.ink}
+        >
           {icon}
         </div>
       )}
